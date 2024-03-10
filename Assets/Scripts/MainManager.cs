@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,6 +12,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
     public Text ScoreText;
     public Text NameText;
+    public Text HighScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -22,6 +24,15 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        SaveData loadedData = GameDataHandler.LoadGameData();
+
+        Debug.Log("Loaded game data: " + JsonUtility.ToJson(loadedData));
+
+        if (loadedData != null)
+            
+        HighScoreText.text = "Highscore: " +  loadedData.highScore + " by " + loadedData.playerName;
+            
+        
 
         ShowName();
         const float step = 0.6f;
@@ -36,6 +47,10 @@ public class MainManager : MonoBehaviour
                 var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
                 brick.PointValue = pointCountArray[i];
                 brick.onDestroyed.AddListener(AddPoint);
+
+                
+
+
             }
         }
     }
@@ -78,11 +93,38 @@ public class MainManager : MonoBehaviour
         m_GameOver = true;
         GameOverText.SetActive(true);
 
+        // Indlæs den eksisterende gemte data for at sammenligne highscores
+        SaveData loadedData = GameDataHandler.LoadGameData();
+
+        // Tjek om den aktuelle score er højere end den gemte highscore
+        if (loadedData == null || m_Points > loadedData.highScore)
+        {
+            // Hvis ja, opdater highscoren og gem den nye data
+            SaveData data = new SaveData
+            {
+                playerName = PlayerInput.Instance.PlayerName,
+                highScore = m_Points
+            };
+
+            GameDataHandler.SaveGameData(data);
+            Debug.Log("Saving new high score: " + JsonUtility.ToJson(data));
+            HighScoreText.text = "Highscore: " + m_Points + " by " + PlayerInput.Instance.PlayerName;
+        }
+        else
+        {
+            Debug.Log("Current score is not higher than the high score. No update needed.");
+            Debug.Log("Current points: " + m_Points);
+            Debug.Log("Loaded high score: " + loadedData.highScore);
+        }
     }
+
 
     void ShowName()
     {
         NameText.text = ("Name:" + PlayerInput.Instance.PlayerName);
     }
   
+ 
+
+ 
 }

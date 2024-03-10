@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
+using System.IO;
 
 public class PlayerInput : MonoBehaviour  
 {
@@ -11,11 +11,13 @@ public class PlayerInput : MonoBehaviour
     public string PlayerName { get; set; }
     public InputField nameInputField;
     public Button startButton;
+    public Button nukeButton;
     // Start is called before the first frame update
     void Start()
     {
         startButton.onClick.AddListener(SubmitName);
         startButton.onClick.AddListener(ChangeScene);
+        nukeButton.onClick.AddListener(ClearGameData);
 
     }
 
@@ -49,5 +51,14 @@ public class PlayerInput : MonoBehaviour
         DontDestroyOnLoad(gameObject); ;
     }
 
-
+    public void ClearGameData()
+    {
+        string path = Application.persistentDataPath + "/gameData.json";
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+            Debug.Log("Game data cleared.");
+        }
+    }
 }
+
